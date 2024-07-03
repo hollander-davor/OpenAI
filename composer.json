@@ -1,0 +1,32 @@
+{
+    "name": "davor/open-ai",
+    "description": "Package for communication with OpenAI",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Hoks\\OpenAi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Davor Holender",
+            "email": "davor.holender@cubes.rs"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "^6.3",
+        "intervention/image": "^2.5"
+    },
+    "extra": {
+        "laravel": {
+            "providers":[
+                "Hoks\\OpenAI\\OpenAIServiceProvider"
+            ],
+            "aliases":{
+                "OpenAI" : "Hoks\\OpenAI\\Classes\\Facades\\OpenAI"
+            }
+        }
+    }
+}
