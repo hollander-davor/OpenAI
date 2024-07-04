@@ -30,7 +30,8 @@ class GenerateAINews extends Command
      */
     public function handle()
     {
-        if(config('openai.use_publish')){
+        //we ask for site id if eaither publish or article table needs siteId
+        if(config('openai.use_publish') || config('openai.article_site_id')){
             $siteId = $this->ask('Enter site id number');
         }else{
             $siteId = false;
@@ -79,7 +80,7 @@ class GenerateAINews extends Command
             }else{
                 $reset = false;
             }
-            $client = $client->dialog($question,1000,$reset);
+            $client = $client->dialog($question,config('openai.dialog_max_tokens'),$reset);
         }
         $AIAnswers = $client->getDialogAnswers();
 
@@ -135,7 +136,11 @@ class GenerateAINews extends Command
         }
         $additionalArticleFields = config('openai.additional_article_fields');
         foreach($additionalArticleFields as $key => $articleField){
-            $articleData['$key'] = $articleField;
+            $articleData[$key] = $articleField;
+        }
+
+        if(config('openai.article_site_id') && $siteId){
+            $articleData['site_id'] = $siteId;
         }
         $articleId = \DB::table(config('openai.articles_table_name'))->insertGetId($articleData);
 

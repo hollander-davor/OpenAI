@@ -42,6 +42,10 @@ return [
     'additional_article_fields' => [],
     //does database uses publish table for articles (if yes, specifi site id)
     'use_publish' => false,
+    //does article table has column site_id
+    'article_site_id' => false,
     //user id for created_at and updated_at
-    'user_id' => 0
+    'user_id' => 0,
+    //maximum number of tokens for dialog
+    'dialog_max_tokens' => 1000
 ];
