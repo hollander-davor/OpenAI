@@ -5,7 +5,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Hoks\\OpenAi\\": "src/"
+            "Hoks\\OpenAI\\": "src/"
         }
     },
     "authors": [
