@@ -131,7 +131,7 @@ class GenerateAINews extends Command
         $imageDimensionsArray = config('openai.image_dimensions');
         foreach($imageDimensionsArray as $imageDimension){
             $imageDimensionShort = str_replace('image','',$imageDimension);
-            $articleData[$imageDimension] = str_replace('.png',$imageDimensionShort.'png',$savedImage);
+            $articleData[$imageDimension] = str_replace('.png',$imageDimensionShort.'.png',$savedImage);
         }
         $additionalArticleFields = config('openai.additional_article_fields');
         foreach($additionalArticleFields as $key => $articleField){
