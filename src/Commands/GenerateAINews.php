@@ -50,10 +50,6 @@ class GenerateAINews extends Command
         }
         $bar->finish();
         $this->info("\nAll articles have been created!");
-
-        // $client = \OpenAI::client('chat/completions')->dialog('What is fastest land animal?')->dialog('Is Usain Bolt faster?')->getDialogAnswers();
-
-
     }
 
     /**
@@ -157,7 +153,7 @@ class GenerateAINews extends Command
         if(isset($existCategory) && !empty($existCategory)){
             $categoryId = $existCategory->id;
         }else{
-            $categoryId = \DB::table(config('openai.categories_table_name'))::insertGetId([
+            $categoryId = \DB::table(config('openai.categories_table_name'))->insertGetId([
                 'name' => $categoryName,
                 'color' => '#305aa2',
                 'seo_title' => $categoryName,
@@ -202,9 +198,9 @@ class GenerateAINews extends Command
         $data['creation_user'] = 0;
         $data['creation_date'] = now()->toDateString();
 
-        $mediaEntity = \DB::table(config('openai.media_table_name'))::create($data);
+        $mediaEntity = \DB::table(config('openai.media_table_name'))->create($data);
 
-        \DB::table(config('openai.media_sources_table_name'))::firstOrCreate([
+        \DB::table(config('openai.media_sources_table_name'))->firstOrCreate([
             'name' => $data['source'],
         ]);
 
