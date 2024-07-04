@@ -249,9 +249,8 @@ class GenerateAINews extends Command
         header('Content-Type: image/png');
         $fullFileName = $mediaEntity->id.'_open_ai_image.png';
         $file->save($this->joinToPath($targetFolderAbsolutePath, $fullFileName));
-
         $filename =  $this->joinToPath($targetFolderName, $fullFileName);
-        $mediaEntity->update(['filename' => $filename]);
+        \DB::table(config('openai.media_table_name'))->where('id',$mediaEntityId)->update(['filename' => $filename]);
 
         $filePathForArticle = '/data/images/'.$targetFolderName.'/'.$fullFileName;
 
