@@ -30,6 +30,11 @@ class GenerateAINews extends Command
      */
     public function handle()
     {
+        if(config('openai.use_publish')){
+            $siteId = $this->ask('Enter site id number');
+        }else{
+            $siteId = false;
+        }
         $categoriesArray = $this->createCategoriesArray();
         $articlesPerCategory = $this->ask('How many articles to create per category?');
         $categoriesNumber = count($categoriesArray);
@@ -43,7 +48,7 @@ class GenerateAINews extends Command
             $subcategoryId = $this->createCategory('Vesti',$key,$categoryId);
             $articleTitlesForCategory = [];
             for($i = 0; $i < $articlesPerCategory; $i++){
-                $newArticleTitle = $this->createArticle($categoryId,$category,$subcategoryId,$articleTitlesForCategory);
+                $newArticleTitle = $this->createArticle($categoryId,$category,$subcategoryId,$articleTitlesForCategory,$siteId);
                 $articleTitlesForCategory[] = $newArticleTitle;
                 $bar->advance();
             }
@@ -55,7 +60,7 @@ class GenerateAINews extends Command
     /**
      * function that creates article
      */
-    protected function createArticle($categoryId,$categoryName, $subcategoryId,$articleTitlesForCategory){
+    protected function createArticle($categoryId,$categoryName, $subcategoryId,$articleTitlesForCategory,$siteId = false){
         $client = \OpenAI::client('chat/completions');
         $questionsArray = [
             'Ti si novinar u novinskoj agenciji u Srbiji. Napisi naslov za tekst na temu '.$categoryName.' u skladu sa aktuelnim desavanjima u svetu. Naslov napisi uzimajuci u obzir najbolje prakse sa stanovista SEO.',
@@ -95,7 +100,6 @@ class GenerateAINews extends Command
         $articleData = [
             'preheading' => null,
             'heading' => $heading,
-            'tv_heading' => $heading,
             'lead' => $lead,
             'text' => $text,
             'author_id' => 0,
@@ -105,9 +109,9 @@ class GenerateAINews extends Command
             'time_created' => now(),
             'time_created_date' => now()->format('YYYY-mm-dd'),
             'time_changed' => now(),
-            'created_by' => 0,
+            'created_by' => config('openai.user_id'),
             'time_created_real' => now(),
-            'updated_by' => 0,
+            'updated_by' => config('openai.user_id'),
             'time_updated_real' => now(),
             'published' => 1,
             'publish_at' => now(),
@@ -123,24 +127,28 @@ class GenerateAINews extends Command
             'comments' => 1,
             'deleted_at' => null,
             'deleted_by' => null,
-            'brid_tv_id' => null,
-            'latest' => 0,
-            'image_orig' => str_replace('.png','_orig.png',$savedImage),
-            'image_t' => str_replace('.png','_t.png',$savedImage),
-            'image_f' => str_replace('.png','_f.png',$savedImage),
-            'image_ig' => str_replace('.png','_ig.png',$savedImage),
-            'image_s' => str_replace('.png','_s.png',$savedImage),
-            'image_iff' => str_replace('.png','_iff.png',$savedImage),
-            'image_iffk' => str_replace('.png','_iffk.png',$savedImage),
-            'image_kf' => str_replace('.png','_kf.png',$savedImage),
-            'image_m' => str_replace('.png','_m.png',$savedImage),
         ];
         $imageDimensionsArray = config('openai.image_dimensions');
         foreach($imageDimensionsArray as $imageDimension){
             $imageDimensionShort = str_replace('image','',$imageDimension);
             $articleData[$imageDimension] = str_replace('.png',$imageDimensionShort.'png',$savedImage);
         }
-        $article = \DB::table(config('openai.articles_table_name'))->insert($articleData);
+        $additionalArticleFields = config('openai.additional_article_fields');
+        foreach($additionalArticleFields as $key => $articleField){
+            $articleData['$key'] = $articleField;
+        }
+        $articleId = \DB::table(config('openai.articles_table_name'))->insertGetId($articleData);
+
+        if(config('openai.use_publish') && $siteId){
+            \DB::table(config('openai.publish_table_name'))->insert([
+                'site_id' => $siteId,
+                'category_id' => $categoryId,
+                'subcategory_id' => $subcategoryId,
+                'article_id' => $articleId,
+                'created_at' => now(),
+                'created_by' => config('openai.user_id')
+            ]);
+        }
 
 
     }
@@ -164,8 +172,8 @@ class GenerateAINews extends Command
                 'priority' => $priority,
                 'created_at' => now(),
                 'updated_at' => now(),
-                'created_by' => 0,
-                'updated_by' => 0
+                'created_by' => config('openai.user_id'),
+                'updated_by' => config('openai.user_id')
             ]);
         }
 
@@ -193,24 +201,32 @@ class GenerateAINews extends Command
         $data = [
             'category' => config('openai.image_category_id'),
             'source' => config('openai.image_source'),
-            'tags' => config('openai.image_tags_ids')
         ];
         $data['creation_user'] = 0;
         $data['creation_date'] = now()->toDateString();
 
-        $mediaEntity = \DB::table(config('openai.media_table_name'))->insert($data);
+        $mediaEntityId = \DB::table(config('openai.media_table_name'))->insertGetId($data);
+        $mediaEntity = \DB::table(config('openai.media_table_name'))->where('id',$mediaEntityId)->first();
 
         $existingMediaSource =
         \DB::table(config('openai.media_sources_table_name'))->where('name',$data['source'])->first();
-        
+
         if(!isset($existingMediaSource) && empty($existingMediaSource) && !$existingMediaSource){
             \DB::table(config('openai.media_sources_table_name'))->insert([
                 'name' => $data['source'],
             ]);
         }
 
-        if(!empty($data['tags'])) {
-            $mediaEntity->tags()->attach($data['tags']);
+        $mediaTags = config('openai.image_tags_ids');
+
+        if(!empty($mediaTags)) {
+            $mediaEntityId = $mediaEntity->id;
+            foreach($mediaTags as $mediaTag){
+                \DB::table(config('openai.media_tags_table_name'))->insert([
+                    'tag_id' => $mediaTag,
+                    'media_id' => $mediaEntityId
+                ]);
+            }
         }
 
         $storeImagesAppPath = config('newscms.images_folder_absolute_path');

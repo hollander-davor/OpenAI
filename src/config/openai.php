@@ -29,4 +29,19 @@ return [
     'media_table_name' => 'media',
     //table name for media sources
     'media_sources_table_name' => 'media_sources',
+    //table name for media tags
+    'media_tags_table_name' => 'media_tags',
+    //table name for publish
+    'publish_table_name' => 'publish',
+     /**
+     * additional fields for article table
+     * ['brid_tv_id' => null,
+     *  'allow_something' => true
+     * ]
+     */
+    'additional_article_fields' => [],
+    //does database uses publish table for articles (if yes, specifi site id)
+    'use_publish' => false,
+    //user id for created_at and updated_at
+    'user_id' => 0
 ];
