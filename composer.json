@@ -27,7 +27,7 @@
                 "Hoks\\OpenAI\\OpenAIServiceProvider"
             ],
             "aliases":{
-                "OpenAI" : "Hoks\\OpenAI\\Classes\\Facades\\OpenAI"
+                "OpenAI" : "Hoks\\OpenAI\\Facades\\OpenAI"
             }
         }
     }
