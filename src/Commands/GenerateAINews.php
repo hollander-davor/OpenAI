@@ -198,11 +198,16 @@ class GenerateAINews extends Command
         $data['creation_user'] = 0;
         $data['creation_date'] = now()->toDateString();
 
-        $mediaEntity = \DB::table(config('openai.media_table_name'))->create($data);
+        $mediaEntity = \DB::table(config('openai.media_table_name'))->insert($data);
 
-        \DB::table(config('openai.media_sources_table_name'))->firstOrCreate([
-            'name' => $data['source'],
-        ]);
+        $existingMediaSource =
+        \DB::table(config('openai.media_sources_table_name'))->where('name',$data['source'])->first();
+        
+        if(!isset($existingMediaSource) && empty($existingMediaSource) && !$existingMediaSource){
+            \DB::table(config('openai.media_sources_table_name'))->insert([
+                'name' => $data['source'],
+            ]);
+        }
 
         if(!empty($data['tags'])) {
             $mediaEntity->tags()->attach($data['tags']);
