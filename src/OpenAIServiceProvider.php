@@ -11,7 +11,7 @@ class OpenAIServiceProvider extends ServiceProvider{
     public function boot(){
         $this->publishes([
             __DIR__.'/config/openai.php' => config_path('openai.php')
-        ]);
+        ],'config');
         if ($this->app->runningInConsole()) {
             $this->commands([
                 GenerateAINews::class,
@@ -24,5 +24,6 @@ class OpenAIServiceProvider extends ServiceProvider{
         $this->app->bind('OpenAI',function(){
             return new OpenAI();
         });
+        $this->mergeConfigFrom(__DIR__.'/config/openai.php', 'openai');
     }
 }
