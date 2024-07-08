@@ -113,7 +113,7 @@ class GenerateAINews extends Command
         if($this->intextImages == 'yes'){
             if(($increment+1) % $this->intextImagePace == 0){
                 $intextAskClient =  \OpenAI::client('chat/completions');
-                $intextImagePrompt =  $testClient->ask('Write best prompt for creating realistic image that will be used as newspaper article intext photo (photo that will be displayed in the middle of the text and that will better illustrate the text itself) . Photo should not containt faces or letters or numbers or anyting that would tell the viewer that image is created with AI. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"')['content'];
+                $intextImagePrompt =  $intextAskClient->ask('Write best prompt for creating realistic image that will be used as newspaper article intext photo (photo that will be displayed in the middle of the text and that will better illustrate the text itself) . Photo should not containt faces or letters or numbers or anyting that would tell the viewer that image is created with AI. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"')['content'];
                 $intextImageClient = \OpenAI::client('images/generations',60,'dall-e-3');
                 $intextImageUrl = $intextImageClient->generateImage($intextImagePrompt)[0];
                 $savedIntextImage = $this->saveImage($intextImageUrl);
