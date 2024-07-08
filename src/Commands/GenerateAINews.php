@@ -108,7 +108,7 @@ class GenerateAINews extends Command
             'category_id'  => $categoryId,
             'subcategory_id' => $subcategoryId,
             'time_created' => now(),
-            'time_created_date' => now()->format('YYYY-mm-dd'),
+            'time_created_date' => date('Y-m-d'),
             'time_changed' => now(),
             'created_by' => config('openai.user_id'),
             'time_created_real' => now(),
@@ -206,6 +206,8 @@ class GenerateAINews extends Command
         $data = [
             'category' => config('openai.image_category_id'),
             'source' => config('openai.image_source'),
+            'created_at' => now(),
+            'updated_at' => now()
         ];
         $data['creation_user'] = 0;
         $data['creation_date'] = now()->toDateString();
@@ -219,18 +221,48 @@ class GenerateAINews extends Command
         if(!isset($existingMediaSource) && empty($existingMediaSource) && !$existingMediaSource){
             \DB::table(config('openai.media_sources_table_name'))->insert([
                 'name' => $data['source'],
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
         }
 
         $mediaTags = config('openai.image_tags_ids');
-
+        //if tags already exist in db, insert into media tags
         if(!empty($mediaTags)) {
             $mediaEntityId = $mediaEntity->id;
             foreach($mediaTags as $mediaTag){
                 \DB::table(config('openai.media_tags_table_name'))->insert([
                     'tag_id' => $mediaTag,
-                    'media_id' => $mediaEntityId
+                    'media_id' => $mediaEntityId,
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
+            }
+        }else{
+            //if tags table is empty, create tags from config and insert into media tags
+            $mediaTagsTitles = config('openai.image_tag_titles');
+            $mediaEntityId = $mediaEntity->id;
+
+            if(!empty($mediaTagsTitles)){
+                foreach($mediaTagsTitles as $mediaTagTitle){
+                $newTag = \DB::table(config('openai.tags_table_name'))->insert([
+                    'title' => $mediaTagTitle,
+                    'description' => $mediaTagTitle,
+                    'active' => 1,
+                    'created_by' => config('openai.user_id'),
+                    'updated_by' => config('openai.user_id'),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                \DB::table(config('openai.media_tags_table_name'))->insert([
+                    'tag_id' => $newTag->id,
+                    'media_id' => $mediaEntityId,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                }
             }
         }
 

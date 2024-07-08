@@ -15,8 +15,10 @@ return [
         'image_kf',
         'image_m',
     ],
-    //tags ids for images
+    //tags ids for images (if tags allready exist, if not, leave empty)
     'image_tags_ids' => [1,2,3],
+    //tags names, if tags table are empty, enter three tag titles to be created
+    'image_tag_titles' => ['Image','Photograph','Illustration'],
     //string that would be saved as source for image
     'image_source' => 'OpenAI',
     //category id for image
@@ -33,7 +35,9 @@ return [
     'media_tags_table_name' => 'media_tags',
     //table name for publish
     'publish_table_name' => 'publish',
-     /**
+    //table name for tags
+    'tags_table_name' => 'tags',
+     /** 
      * additional fields for article table
      * ['brid_tv_id' => null,
      *  'allow_something' => true
