@@ -8,6 +8,11 @@ use GuzzleHttp\Client;
 
 class GenerateAINews extends Command
 {
+    protected $intextImages;
+    protected $intextImagePace;
+    protected $lastInsertedMediaId;
+
+
     /**
      * The name and signature of the console command.
      *
@@ -39,6 +44,13 @@ class GenerateAINews extends Command
         $categoriesArray = $this->createCategoriesArray();
         $articlesPerCategory = $this->ask('How many articles to create per category?');
         $categoriesNumber = count($categoriesArray);
+        $intextImages = $this->choice('Do You want to add intext images to articles?',['yes','no'],1);
+        $this->intextImages = $intextImages;
+        if($intextImages == 'yes'){
+            $intextImagePace = $this->ask('How many articles should have intext image INTEGER ("1" for every,"2" for every other,"3" for every third,etc.)?');
+            $this->intextImagePace = $intextImagePace;
+        }
+
 
         $this->info("\nCreating articles!");
         $bar = $this->output->createProgressBar($categoriesNumber * $articlesPerCategory);
@@ -49,7 +61,7 @@ class GenerateAINews extends Command
             $subcategoryId = $this->createCategory('Vesti',$key,$categoryId);
             $articleTitlesForCategory = [];
             for($i = 0; $i < $articlesPerCategory; $i++){
-                $newArticleTitle = $this->createArticle($categoryId,$category,$subcategoryId,$articleTitlesForCategory,$siteId);
+                $newArticleTitle = $this->createArticle($categoryId,$category,$subcategoryId,$articleTitlesForCategory,$i,$siteId);
                 $articleTitlesForCategory[] = $newArticleTitle;
                 $bar->advance();
             }
@@ -61,7 +73,7 @@ class GenerateAINews extends Command
     /**
      * function that creates article
      */
-    protected function createArticle($categoryId,$categoryName, $subcategoryId,$articleTitlesForCategory,$siteId = false){
+    protected function createArticle($categoryId,$categoryName, $subcategoryId,$articleTitlesForCategory,$increment,$siteId = false){
         $client = \OpenAI::client('chat/completions');
         $questionsArray = [
             'Ti si novinar u novinskoj agenciji u Srbiji. Napisi naslov za tekst na temu '.$categoryName.' u skladu sa aktuelnim desavanjima u svetu. Naslov napisi uzimajuci u obzir najbolje prakse sa stanovista SEO.',
@@ -96,6 +108,23 @@ class GenerateAINews extends Command
         $imageClient = \OpenAI::client('images/generations',60,'dall-e-3');
         $imageUrl = $imageClient->generateImage($imagePrompt)[0];
         $savedImage = $this->saveImage($imageUrl);
+
+        //intext image
+        if($this->intextImages == 'yes'){
+            if(($increment+1) % $this->intextImagePace == 0){
+                $intextAskClient =  \OpenAI::client('chat/completions');
+                $intextImagePrompt =  $testClient->ask('Write best prompt for creating realistic image that will be used as newspaper article intext photo (photo that will be displayed in the middle of the text and that will better illustrate the text itself) . Photo should not containt faces or letters or numbers or anyting that would tell the viewer that image is created with AI. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"')['content'];
+                $intextImageClient = \OpenAI::client('images/generations',60,'dall-e-3');
+                $intextImageUrl = $intextImageClient->generateImage($intextImagePrompt)[0];
+                $savedIntextImage = $this->saveImage($intextImageUrl);
+
+                $intextImageSrc = str_replace('.png','_f.png',$savedIntextImage);
+                $intextImageHtml = '<figure class="single-news-img"><img m_ext="f" m_id="'.$this->lastInsertedMediaId.'" src="'.$intextImageSrc.'">
+                                            <p class="image-source">OpenAI
+                                            </p></figure>';
+
+            }
+        }
 
 
         $articleData = [
@@ -215,6 +244,7 @@ class GenerateAINews extends Command
         $data['creation_date'] = now()->toDateString();
 
         $mediaEntityId = \DB::table(config('openai.media_table_name'))->insertGetId($data);
+        $this->lastInsertedMediaId = $mediaEntityId;
         $mediaEntity = \DB::table(config('openai.media_table_name'))->where('id',$mediaEntityId)->first();
 
         $existingMediaSource =
