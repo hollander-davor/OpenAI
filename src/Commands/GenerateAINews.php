@@ -122,6 +122,9 @@ class GenerateAINews extends Command
                 $intextImageHtml = '<figure class="single-news-img"><img m_ext="f" m_id="'.$this->lastInsertedMediaId.'" src="'.$intextImageSrc.'">
                                             <p class="image-source">OpenAI
                                             </p></figure>';
+                                        
+                $search = '/'.preg_quote('</p>', '/').'/';
+                $text = preg_replace($search,'</p>'.$intextImageHtml,$text,1);
 
             }
         }
