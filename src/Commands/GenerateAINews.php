@@ -65,7 +65,7 @@ class GenerateAINews extends Command
         $client = \OpenAI::client('chat/completions');
         $questionsArray = [
             'Ti si novinar u novinskoj agenciji u Srbiji. Napisi naslov za tekst na temu '.$categoryName.' u skladu sa aktuelnim desavanjima u svetu. Naslov napisi uzimajuci u obzir najbolje prakse sa stanovista SEO.',
-            'Za ovaj naslov, napisi kraci uvodni tekst uzimajuci u obzir najbolje prakse sa stanovista SEO',
+            'Za ovaj naslov, napisi kraci uvodni tekst uzimajuci u obzir najbolje prakse sa stanovista SEO, a da tekst ne bude veci od 300 karaktera',
             'Za prethodni naslov i uvodni tekst, napisi novinarski tekst vodeci racuna o pravopisu.Tekst vrati u p html tagovima.',
         ];
 
@@ -154,6 +154,8 @@ class GenerateAINews extends Command
                 'created_by' => config('openai.user_id')
             ]);
         }
+
+        return $heading;
 
 
     }
