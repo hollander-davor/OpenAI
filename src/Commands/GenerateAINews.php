@@ -245,7 +245,7 @@ class GenerateAINews extends Command
 
             if(!empty($mediaTagsTitles)){
                 foreach($mediaTagsTitles as $mediaTagTitle){
-                $newTag = \DB::table(config('openai.tags_table_name'))->insert([
+                $newTagId = \DB::table(config('openai.tags_table_name'))->insertGetId([
                     'title' => $mediaTagTitle,
                     'active' => 1,
                     'created_by' => config('openai.user_id'),
@@ -255,7 +255,7 @@ class GenerateAINews extends Command
                 ]);
 
                 \DB::table(config('openai.media_tags_table_name'))->insert([
-                    'tag_id' => $newTag->id,
+                    'tag_id' => $newTagId,
                     'media_id' => $mediaEntityId,
                     'created_at' => now(),
                     'updated_at' => now()
