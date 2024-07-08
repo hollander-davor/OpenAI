@@ -247,7 +247,6 @@ class GenerateAINews extends Command
                 foreach($mediaTagsTitles as $mediaTagTitle){
                 $newTag = \DB::table(config('openai.tags_table_name'))->insert([
                     'title' => $mediaTagTitle,
-                    'description' => $mediaTagTitle,
                     'active' => 1,
                     'created_by' => config('openai.user_id'),
                     'updated_by' => config('openai.user_id'),
