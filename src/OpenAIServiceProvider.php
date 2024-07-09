@@ -5,6 +5,8 @@ namespace Hoks\OpenAI;
 use Illuminate\Support\ServiceProvider;
 use Hoks\OpenAI\OpenAI;
 use Hoks\OpenAI\Commands\GenerateAINews;
+use Hoks\OpenAI\Commands\GenerateAITagsForArticles;
+
 
 class OpenAIServiceProvider extends ServiceProvider{
 
@@ -15,6 +17,7 @@ class OpenAIServiceProvider extends ServiceProvider{
         if ($this->app->runningInConsole()) {
             $this->commands([
                 GenerateAINews::class,
+                GenerateAITagsForArticles::class
             ]);
         }
 

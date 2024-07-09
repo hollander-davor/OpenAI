@@ -37,6 +37,8 @@ return [
     'publish_table_name' => 'publish',
     //table name for tags
     'tags_table_name' => 'tags',
+    //table name for article tags
+    'article_tags_table_name' => 'article_tag',
      /** 
      * additional fields for article table
      * ['brid_tv_id' => null,
