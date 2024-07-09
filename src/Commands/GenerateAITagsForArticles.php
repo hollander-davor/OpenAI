@@ -72,32 +72,33 @@ class GenerateAITagsForArticles extends Command
                 preg_match_all($pattern, $text, $matches);
                 // concatenate all matched text
                 $filteredText = implode('', $matches[0]);
+                if(!empty($filteredText)){
+                    $askClient = \OpenAI::client('chat/completions');
+                    $tags = $askClient->ask('Za naredni novinski tekst predlozi mi 3 tag-a postujuci najbolje SEO prakse i analizu kljucnih reci u tekstu. Tagovi koje predlazes smeju biti u duzini od jedne reci ili od dve reci. Preskoci sve predloge koji imaju vise od dve reci. Neka odgovor bude string u kojem ce tagovi biti odvjeni sa |  "' . strip_tags($filteredText) . '"')['content'];
+                    $tagsArray = explode('|',$tags);
+                    foreach($tagsArray as $tag){
+                        $tagTitle = trim($tag);
+                        //check if tag exists and get id
+                        $tagExists = $tagId = \DB::table(config('openai.tags_table_name'))->select('id')->where('title',$tagTitle)->first();
 
-                $askClient = \OpenAI::client('chat/completions');
-                $tags = $askClient->ask('Za naredni novinski tekst predlozi mi 3 tag-a postujuci najbolje SEO prakse i analizu kljucnih reci u tekstu. Tagovi koje predlazes smeju biti u duzini od jedne reci ili od dve reci. Preskoci sve predloge koji imaju vise od dve reci. Neka odgovor bude string u kojem ce tagovi biti odvjeni sa |  "' . strip_tags($filteredText) . '"')['content'];
-                $tagsArray = explode('|',$tags);
-                foreach($tagsArray as $tag){
-                    $tagTitle = trim($tag);
-                    //check if tag exists and get id
-                    $tagExists = $tagId = \DB::table(config('openai.tags_table_name'))->select('id')->where('title',$tagTitle)->first();
+                        if($tagExists){
+                            $tagId = $tagExists->id;
+                        }else{
+                            $tagId = \DB::table(config('openai.tags_table_name'))->insertGetId([
+                                'title' => $tagTitle,
+                                'active' => 1,
+                                'created_by' => config('openai.user_id'),
+                                'updated_by' => config('openai.user_id'),
+                                'created_at' => now(),
+                                'updated_at' => now()
+                            ]);
+                        }
 
-                    if($tagExists){
-                        $tagId = $tagExists->id;
-                    }else{
-                        $tagId = \DB::table(config('openai.tags_table_name'))->insertGetId([
-                            'title' => $tagTitle,
-                            'active' => 1,
-                            'created_by' => config('openai.user_id'),
-                            'updated_by' => config('openai.user_id'),
-                            'created_at' => now(),
-                            'updated_at' => now()
+                        \DB::table(config('openai.article_tags_table_name'))->insert([
+                            'tag_id' => $tagId,
+                            'article_id' => $articleId
                         ]);
                     }
-
-                    \DB::table(config('openai.article_tags_table_name'))->insert([
-                        'tag_id' => $tagId,
-                        'article_id' => $articleId
-                    ]);
                 }
                 $bar->advance();
             }
