@@ -43,7 +43,7 @@ class GenerateAITagsForArticles extends Command
             $categoriesArray = $this->createCategoriesArray();
             $categoryIds = [];
             foreach($categoriesArray as $category){
-                $categoryId = \DB::table(config('openai.categories_table_name'))->select('id','text')->where('name',$category)->first()->id;
+                $categoryId = \DB::table(config('openai.categories_table_name'))->select('id')->where('name',$category)->first()->id;
                 $categoryIds[] = $categoryId;
             }
             if(!empty($categoryIds)){
