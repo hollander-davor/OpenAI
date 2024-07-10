@@ -35,7 +35,8 @@ class GenerateAITagsForArticles extends Command
      */
     public function handle()
     {
-        //we ask user to either enter sprcific category or to use all categories eg. all articles
+        $tagsPerArticle = $this->ask('How many tags per articke should be created?(INTEGER)');
+        //we ask user to either enter specific category or to use all categories eg. all articles
         $categoryOrAll = $this->choice('Do you want to create tags for all categories or for specific ones?',['all','select categories'],0);
         if($categoryOrAll == 'all'){
             $articles = \DB::table(config('openai.articles_table_name'))->whereNull('deleted_at')->get();
@@ -66,6 +67,12 @@ class GenerateAITagsForArticles extends Command
             $bar = $this->output->createProgressBar(count($articles));
             foreach($articles as $article){
                 $articleId = $article->id;
+                // we skip articles that already have some tags
+                $articleTagsCount = \DB::table('openai.article_tags_table_name')->where('article_id',$articleId)->get()->count();
+                if($articleTagsCount > 0){
+                    continue;
+                }
+                
                 $text = $article->text;
                 $pattern = '/<p>(.*?)<\/p>/s';
                 // match all <p> tags and their contents
@@ -74,7 +81,7 @@ class GenerateAITagsForArticles extends Command
                 $filteredText = implode('', $matches[0]);
                 if(!empty($filteredText)){
                     $askClient = \OpenAI::client('chat/completions');
-                    $tags = $askClient->ask('Za naredni novinski tekst predlozi mi 3 tag-a postujuci najbolje SEO prakse i analizu kljucnih reci u tekstu. Tagovi koje predlazes smeju biti u duzini od jedne reci ili od dve reci. Preskoci sve predloge koji imaju vise od dve reci. Neka odgovor bude string u kojem ce tagovi biti odvjeni sa |  "' . strip_tags($filteredText) . '"')['content'];
+                    $tags = $askClient->ask('Za naredni novinski tekst predlozi mi sledeci broj tagova:'.$tagsPerArticle.' pritom postujuci najbolje SEO prakse i analizu kljucnih reci u tekstu. Tagovi koje predlazes smeju biti u duzini od jedne reci ili od dve reci. Preskoci sve predloge koji imaju vise od dve reci. Neka odgovor bude string u kojem ce tagovi biti odvjeni sa |  "' . strip_tags($filteredText) . '"')['content'];
                     $tagsArray = explode('|',$tags);
                     foreach($tagsArray as $tag){
                         $tagTitle = trim($tag);

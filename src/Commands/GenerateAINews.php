@@ -280,14 +280,20 @@ class GenerateAINews extends Command
 
             if(!empty($mediaTagsTitles)){
                 foreach($mediaTagsTitles as $mediaTagTitle){
-                $newTagId = \DB::table(config('openai.tags_table_name'))->insertGetId([
-                    'title' => $mediaTagTitle,
-                    'active' => 1,
-                    'created_by' => config('openai.user_id'),
-                    'updated_by' => config('openai.user_id'),
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                //check if tag already exists, if not create new one
+                $tagExists = \DB::table(config('openai.tags_table_name'))->where('title',$mediaTagTitle)->first();
+                if($tagExists){
+                    $newTagId = $tagExists->id;
+                }else{
+                    $newTagId = \DB::table(config('openai.tags_table_name'))->insertGetId([
+                        'title' => $mediaTagTitle,
+                        'active' => 1,
+                        'created_by' => config('openai.user_id'),
+                        'updated_by' => config('openai.user_id'),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
 
                 \DB::table(config('openai.media_tags_table_name'))->insert([
                     'tag_id' => $newTagId,
