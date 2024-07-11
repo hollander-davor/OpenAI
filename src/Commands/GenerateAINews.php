@@ -104,7 +104,7 @@ class GenerateAINews extends Command
 
 
         $askClient = \OpenAI::client('chat/completions');
-        $imagePrompt = $askClient->ask('Write best prompt for creating realistic image that will be used as newspaper article photo. Photo should not containt faces or letters or numbers or anyting that would tell the viewer that image is created with AI. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"')['content'];
+        $imagePrompt = $askClient->ask('Write best prompt for creating image that will be used as newspaper article photo. Photo must be award-winning, photorealistic, 8K, natural lighting, HDR, high resolution, shot on IMAX Laser, intricate details. Photo must resemble photos found on stock photos. Use natural colors and ambient, and studio lighting and uneven skin tone. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"  photo, photograph, raw photo, analog photo, 4k, fujifilm photograph ')['content'];
         $imageClient = \OpenAI::client('images/generations',60,'dall-e-3');
         $imageUrl = $imageClient->generateImage($imagePrompt)[0];
         $savedImage = $this->saveImage($imageUrl);
@@ -113,7 +113,7 @@ class GenerateAINews extends Command
         if($this->intextImages == 'yes'){
             if(($increment+1) % $this->intextImagePace == 0){
                 $intextAskClient =  \OpenAI::client('chat/completions');
-                $intextImagePrompt =  $intextAskClient->ask('Write best prompt for creating realistic image that will be used as newspaper article intext photo (photo that will be displayed in the middle of the text and that will better illustrate the text itself) . Photo should not containt faces or letters or numbers or anyting that would tell the viewer that image is created with AI. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"')['content'];
+                $intextImagePrompt = $askClient->ask('Write best prompt for creating image that will be used as newspaper article photo. Photo must be award-winning, photorealistic, 8K, natural lighting, HDR, high resolution, shot on IMAX Laser, intricate details. Photo must resemble photos found on stock photos. Use natural colors and ambient, and studio lighting and uneven skin tone. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"  photo, photograph, raw photo, analog photo, 4k, fujifilm photograph ')['content'];
                 $intextImageClient = \OpenAI::client('images/generations',60,'dall-e-3');
                 $intextImageUrl = $intextImageClient->generateImage($intextImagePrompt)[0];
                 $savedIntextImage = $this->saveImage($intextImageUrl);
