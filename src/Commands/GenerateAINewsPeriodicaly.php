@@ -49,7 +49,7 @@ class GenerateAINewsPeriodicaly extends Command
         $bar = $this->output->createProgressBar($articlesNumber);
 
         //pick category
-        $categoriesIds = \DB::table(config('openai.categories_table_name'))->select('id')->where('parent',0)->where('ban',0)->whereNull('deleted_at')->pluck('id')->toArray();
+        $categoriesIds = \DB::table(config('openai.categories_table_name'))->select('id')->where('parent_id',0)->where('ban',0)->whereNull('deleted_at')->pluck('id')->toArray();
        
         for($i = 0; $i < $articlesNumber; $i++){
             $categoryId = $this->pickRandom($categoriesIds);
