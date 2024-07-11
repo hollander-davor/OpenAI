@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Hoks\OpenAI\OpenAI;
 use Hoks\OpenAI\Commands\GenerateAINews;
 use Hoks\OpenAI\Commands\GenerateAITagsForArticles;
+use Hoks\OpenAI\Commands\GenerateAINewsPeriodicaly;
 
 
 class OpenAIServiceProvider extends ServiceProvider{
@@ -17,7 +18,8 @@ class OpenAIServiceProvider extends ServiceProvider{
         if ($this->app->runningInConsole()) {
             $this->commands([
                 GenerateAINews::class,
-                GenerateAITagsForArticles::class
+                GenerateAITagsForArticles::class,
+                GenerateAINewsPeriodicaly::class
             ]);
         }
 

@@ -46,12 +46,18 @@ return [
      * ]
      */
     'additional_article_fields' => [],
-    //does database uses publish table for articles (if yes, specifi site id)
+    //does database uses publish table for articles (if yes, specify site id 'article_site_id' only for GenerateAINewsPeriodicaly)
     'use_publish' => false,
-    //does article table has column site_id
+    //does article table has column site_id, if uses, pass value (value used only for GenerateAINewsPeriodicaly)
     'article_site_id' => false,
     //user id for created_at and updated_at
     'user_id' => 0,
     //maximum number of tokens for dialog
-    'dialog_max_tokens' => 1000
+    'dialog_max_tokens' => 1000,
+    //number of articles GenerateAINewsPeriodicaly
+    'articles_number' => 5,
+    //insert intext images into GenerateAINewsPeriodicaly articles(enter number of images),to skip pass false
+    'insert_intext_images' => false,
+    //default number of tags for GenerateAINewsPeriodicaly
+    'tags_number' => 3
 ];
