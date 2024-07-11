@@ -97,7 +97,7 @@ class GenerateAINewsPeriodicaly extends Command
         $savedImage = $this->saveImage($imageUrl);
 
         //intext image
-        if($this->intextImages == 'yes'){
+        if($this->intextImages){
             $intextAskClient =  \OpenAI::client('chat/completions');
             $intextImagePrompt =  $intextAskClient->ask('Write best prompt for creating realistic image that will be used as newspaper article intext photo (photo that will be displayed in the middle of the text and that will better illustrate the text itself) . Photo should not containt faces or letters or numbers or anyting that would tell the viewer that image is created with AI. Photo should be created for the following text in Serbian "' . strip_tags($text) . '"')['content'];
             $intextImageClient = \OpenAI::client('images/generations',60,'dall-e-3');

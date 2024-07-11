@@ -56,7 +56,7 @@ return [
     'dialog_max_tokens' => 1000,
     //number of articles GenerateAINewsPeriodicaly
     'articles_number' => 5,
-    //insert intext images into GenerateAINewsPeriodicaly articles(enter number of images),to skip pass false
+    //insert intext images into GenerateAINewsPeriodicaly articles(to skip pass false)
     'insert_intext_images' => false,
     //default number of tags for GenerateAINewsPeriodicaly
     'tags_number' => 3
