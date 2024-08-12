@@ -59,5 +59,9 @@ return [
     //insert intext images into GenerateAINewsPeriodicaly articles(to skip pass false)
     'insert_intext_images' => false,
     //default number of tags for GenerateAINewsPeriodicaly
-    'tags_number' => 3
+    'tags_number' => 3,
+    //Country for news
+    'country' => 'Srbija',
+    //language
+    'language' => 'srpski'
 ];
