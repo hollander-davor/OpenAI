@@ -68,7 +68,7 @@ class GenerateAITagsForArticles extends Command
             foreach($articles as $article){
                 $articleId = $article->id;
                 // we skip articles that already have some tags
-                $articleTagsCount = \DB::table('openai.article_tags_table_name')->where('article_id',$articleId)->get()->count();
+                $articleTagsCount = \DB::table(config('openai.article_tags_table_name'))->where('article_id',$articleId)->get()->count();
                 if($articleTagsCount > 0){
                     continue;
                 }
