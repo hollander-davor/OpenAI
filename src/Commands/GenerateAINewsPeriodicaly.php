@@ -68,11 +68,19 @@ class GenerateAINewsPeriodicaly extends Command
      */
     protected function createArticle($categoryId,$categoryName, $subcategoryId,$increment,$siteId = false){
         $client = \OpenAI::client('chat/completions');
-        $questionsArray = [
-         'Ti si novinar u novinskoj agenciji u drzavi:'.config('openai.country').'. Napisi naslov za tekst na temu '.$categoryName.' u skladu sa aktuelnim desavanjima u drzavi i svetu. Naslov napisi uzimajuci u obzir najbolje prakse sa stanovista SEO. Neka jezik bude '.config('openai.language').' jezik.',
-            'Za ovaj naslov, napisi kraci uvodni tekst uzimajuci u obzir najbolje prakse sa stanovista SEO, a da tekst ne bude veci od 300 karaktera i treba da je na jeziku:'.config('openai.language').' jezik',
-            'Za prethodni naslov i uvodni tekst, napisi novinarski tekst vodeci racuna o pravopisu i SEO. Neka tekst bude na jeziku: '.config('openai.language').' jezik.Tekst vrati u p html tagovima.',
-        ];
+        if(config('openai.country_news')){
+            $questionsArray = [
+                'Ti si novinar u novinskoj agenciji u drzavi:'.config('openai.country').'. Napisi naslov za tekst na temu '.$categoryName.' u skladu sa aktuelnim desavanjima u drzavi i svetu. Naslov napisi uzimajuci u obzir najbolje prakse sa stanovista SEO. Neka jezik bude '.config('openai.language').' jezik.',
+                'Za ovaj naslov, napisi kraci uvodni tekst uzimajuci u obzir najbolje prakse sa stanovista SEO, a da tekst ne bude veci od 300 karaktera i treba da je na jeziku:'.config('openai.language').' jezik',
+                'Za prethodni naslov i uvodni tekst, napisi novinarski tekst vodeci racuna o pravopisu i SEO. Neka tekst bude na jeziku: '.config('openai.language').' jezik.Tekst vrati u p html tagovima.',
+            ];
+        }else{
+            $questionsArray = [
+                'Ti si novinar u novinskoj agenciji. Napisi naslov za tekst na temu '.$categoryName.' u skladu sa stvarnim aktuelnim desavanjima. Naslov napisi uzimajuci u obzir najbolje prakse sa stanovista SEO. Neka jezik bude '.config('openai.language').' jezik.',
+                'Za ovaj naslov, napisi kraci uvodni tekst uzimajuci u obzir najbolje prakse sa stanovista SEO, a da tekst ne bude veci od 300 karaktera i treba da je na jeziku:'.config('openai.language').' jezik',
+                'Za prethodni naslov i uvodni tekst, napisi novinarski tekst vodeci racuna o pravopisu i SEO. Neka tekst bude na jeziku: '.config('openai.language').' jezik.Tekst vrati u p html tagovima.',
+            ];
+        }
 
         foreach($questionsArray as $key => $question){
             if($key == 0){

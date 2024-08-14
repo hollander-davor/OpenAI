@@ -63,5 +63,7 @@ return [
     //Country for news
     'country' => 'Srbija',
     //language
-    'language' => 'srpski'
+    'language' => 'srpski',
+    //will news be for some country or they will be for the whole world (value false)
+    'country_news' => true
 ];
