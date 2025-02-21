@@ -57,8 +57,13 @@ class GenerateAINews extends Command
 
         foreach($categoriesArray as $key => $category){
             //create category and subcategory
-            $categoryId = $this->createCategory($category,$key);
-            $subcategoryId = $this->createCategory('Vesti',$key,$categoryId);
+            if($siteId){
+                $categorySiteId = $siteId;
+            }else{
+                $categorySiteId = 0;
+            }
+            $categoryId = $this->createCategory($category,$key,0,$categorySiteId);
+            $subcategoryId = $this->createCategory('Vesti',$key,$categoryId,$categorySiteId);
             $articleTitlesForCategory = [];
             for($i = 0; $i < $articlesPerCategory; $i++){
                 $newArticleTitle = $this->createArticle($categoryId,$category,$subcategoryId,$articleTitlesForCategory,$i,$siteId);
@@ -205,7 +210,7 @@ class GenerateAINews extends Command
     /**
      * function that creates category/subcategory and returns id
      */
-    protected function createCategory($categoryName, $priority, $parentId=0){
+    protected function createCategory($categoryName, $priority, $parentId=0,$siteId=0){
         $existCategory = \DB::table(config('openai.categories_table_name'))->where('name',$categoryName)->where('parent_id',$parentId)->first();
         if(isset($existCategory) && !empty($existCategory)){
             $categoryId = $existCategory->id;
@@ -216,7 +221,7 @@ class GenerateAINews extends Command
                 'seo_title' => $categoryName,
                 'seo_description' => $categoryName,
                 'seo_keywords' => $categoryName,
-                'site_id' => 0,
+                'site_id' => $siteId,
                 'parent_id' => $parentId,
                 'priority' => $priority,
                 'created_at' => now(),
