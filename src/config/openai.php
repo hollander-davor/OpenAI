@@ -65,5 +65,8 @@ return [
     //language
     'language' => 'srpski',
     //will news be for some country or they will be for the whole world (value false)
-    'country_news' => true
+    'country_news' => true,
+    //pass api key in client method
+    'provide-api-key' => false
+
 ];

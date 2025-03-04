@@ -103,10 +103,13 @@ class OpenAI{
     /**
      * Create client
      */
-    public function client(string $uri,int $timeout = 30,string $model = 'gpt-4-turbo'){
+    public function client(string $uri,int $timeout = 30,string $model = 'gpt-4-turbo',$apiKey = ''){
+        if(!config('openai.provide-api-key')){
+            $apiKey = config('openai.openai-api-key');
+        }
         $client = new Client(['base_uri' => 'https://api.openai.com/v1/']);
         $headers = [
-            "Authorization" => "Bearer ".config('openai.openai-api-key'),
+            "Authorization" => "Bearer ".$apiKey,
             "Content-Type" => "application/json",
             "timeout" => $timeout,
         ];
