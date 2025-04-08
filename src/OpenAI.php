@@ -245,7 +245,7 @@ class OpenAI{
         //form request
         $options = ['headers' => $this->getHeaders(),'json' => []];
         $response = $client->request('POST',$this->getUri(),$options);
-        if (!$response->successful()) {
+        if (!$response->getStatusCode() === 200) {
             return false;
         }
 
@@ -263,7 +263,7 @@ class OpenAI{
         ]];
         $response = $client->request('POST',$this->getUri(),$options);
          // Provera uspešnosti odgovora
-        if (!$response->successful()) {
+        if (!$response->getStatusCode() === 200) {
             return false;
         }
     }
@@ -276,7 +276,7 @@ class OpenAI{
         ]];
         $response = $client->request('POST',$this->getUri(),$options);
          // Provera uspešnosti odgovora
-        if (!$response->successful()) {
+        if (!$response->getStatusCode() === 200) {
             return false;
         }
         $runId = $response->json('id');
@@ -298,7 +298,7 @@ class OpenAI{
         $this->setUri('threads/'.$threadId.'/messages');
         $options = ['headers' => $this->getHeaders()];
         $response = $client->request('GET', $this->getUri(), $options);
-        if(!$response->successful()) {
+        if(!$response->getStatusCode() === 200) {
             return false;
         }
         $messages = $response->json('data');
