@@ -248,8 +248,7 @@ class OpenAI{
         if (!$response->getStatusCode() === 200) {
             return false;
         }
-
-        $threadId = $response->json('id');
+        $threadId = json_decode($response->getBody(),true)['id'];
         return $threadId;
     }
 
@@ -279,7 +278,7 @@ class OpenAI{
         if (!$response->getStatusCode() === 200) {
             return false;
         }
-        $runId = $response->json('id');
+        $runId = json_decode($response->getBody(),true)['id'];
 
         return $runId;
     }   
@@ -291,7 +290,7 @@ class OpenAI{
         $options = ['headers' => $this->getHeaders()];
 
         $response = $client->request('GET', $this->getUri(), $options);
-        $status = $response->json('status');
+        $status =  json_decode($response->getBody(),true)['status'];
         if ($status !== 'completed') {
             return false;
         }
@@ -301,7 +300,7 @@ class OpenAI{
         if(!$response->getStatusCode() === 200) {
             return false;
         }
-        $messages = $response->json('data');
+        $messages =  json_decode($response->getBody(),true)['data'];
         $latest = collect($messages)
             ->where('role', 'assistant')
             ->first();
