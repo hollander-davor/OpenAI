@@ -234,4 +234,79 @@ class OpenAI{
         return $this->getResponse();
     }
 
+    //method creates thread and returns thread id
+    public function createThread(){
+        //get client
+        $client = $this->getClient();
+        //add 'OpenAI-Beta'  => 'assistants=v2', to headers
+        $this->headers['OpenAI-Beta'] = 'assistants=v2';
+        $this->setHeaders($this->headers);
+
+        //form request
+        $options = ['headers' => $this->getHeaders(),'json' => []];
+        $response = $client->request('POST',$this->getUri(),$options);
+        if (!$response->successful()) {
+            return false;
+        }
+
+        $threadId = $response->json('id');
+        return $threadId;
+    }
+
+    //send data to thread
+    public function updateThread($threadId,$text){
+        $client = new Client(['base_uri' => 'https://api.openai.com/v1/']);
+        $this->setUri('threads/'.$threadId.'/messages');
+        $options = ['headers' => $this->getHeaders(),'json' => [
+            'role' => 'user',
+            'content' => $text
+        ]];
+        $response = $client->request('POST',$this->getUri(),$options);
+         // Provera uspešnosti odgovora
+        if (!$response->successful()) {
+            return false;
+        }
+    }
+
+    public function runThread($threadId,$assistantId){
+        $client = new Client(['base_uri' => 'https://api.openai.com/v1/']);
+        $this->setUri('threads/'.$threadId.'/runs');
+        $options = ['headers' => $this->getHeaders(),'json' => [
+            'assistant_id' => $assistantId,
+        ]];
+        $response = $client->request('POST',$this->getUri(),$options);
+         // Provera uspešnosti odgovora
+        if (!$response->successful()) {
+            return false;
+        }
+        $runId = $response->json('id');
+
+        return $runId;
+    }   
+
+    public function getRunStatus($threadId, $runId)
+    {
+        $client = new Client(['base_uri' => 'https://api.openai.com/v1/']);
+        $this->setUri('threads/'.$threadId.'/runs/'.$runId);
+        $options = ['headers' => $this->getHeaders()];
+
+        $response = $client->request('GET', $this->getUri(), $options);
+        $status = $response->json('status');
+        if ($status !== 'completed') {
+            return false;
+        }
+        $this->setUri('threads/'.$threadId.'/messages');
+        $options = ['headers' => $this->getHeaders()];
+        $response = $client->request('GET', $this->getUri(), $options);
+        if(!$response->successful()) {
+            return false;
+        }
+        $messages = $response->json('data');
+        $latest = collect($messages)
+            ->where('role', 'assistant')
+            ->first();
+        $content = $latest['content'][0]['text']['value'] ?? 'Nema odgovora.';
+        return $content;
+    } 
+
 }
