@@ -261,10 +261,12 @@ class OpenAI{
             'content' => $text
         ]];
         $response = $client->request('POST',$this->getUri(),$options);
+       
          // Provera uspešnosti odgovora
         if (!$response->getStatusCode() === 200) {
             return false;
         }
+        return true;
     }
 
     public function runThread($threadId,$assistantId){
@@ -285,8 +287,10 @@ class OpenAI{
 
     public function getRunStatus($threadId, $runId)
     {
-        $client = new Client(['base_uri' => 'https://api.openai.com/v1/']);
+        $client = $this->getClient();
         $this->setUri('threads/'.$threadId.'/runs/'.$runId);
+        $this->headers['OpenAI-Beta'] = 'assistants=v2';
+        $this->setHeaders($this->headers);
         $options = ['headers' => $this->getHeaders()];
 
         $response = $client->request('GET', $this->getUri(), $options);
