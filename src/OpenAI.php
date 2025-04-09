@@ -3,6 +3,8 @@
 namespace Hoks\OpenAI;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
+
 
 class OpenAI{
 
@@ -246,6 +248,7 @@ class OpenAI{
         $options = ['headers' => $this->getHeaders(),'json' => []];
         $response = $client->request('POST',$this->getUri(),$options);
         if (!$response->getStatusCode() === 200) {
+            Log::error('Error creating thread: '.$response->getBody());
             return false;
         }
         $threadId = json_decode($response->getBody(),true)['id'];
@@ -264,6 +267,7 @@ class OpenAI{
        
          // Provera uspešnosti odgovora
         if (!$response->getStatusCode() === 200) {
+            Log::error('Error updating thread(sending thread message): '.$response->getBody());
             return false;
         }
         return true;
@@ -278,6 +282,7 @@ class OpenAI{
         $response = $client->request('POST',$this->getUri(),$options);
          // Provera uspešnosti odgovora
         if (!$response->getStatusCode() === 200) {
+            Log::error('Error running thread: '.$response->getBody());
             return false;
         }
         $runId = json_decode($response->getBody(),true)['id'];
@@ -296,12 +301,14 @@ class OpenAI{
         $response = $client->request('GET', $this->getUri(), $options);
         $status =  json_decode($response->getBody(),true)['status'];
         if ($status !== 'completed') {
+            Log::error('Error getting run status: '.$response->getBody());
             return false;
         }
         $this->setUri('threads/'.$threadId.'/messages');
         $options = ['headers' => $this->getHeaders()];
         $response = $client->request('GET', $this->getUri(), $options);
         if(!$response->getStatusCode() === 200) {
+            Log::error('Error getting thread messages: '.$response->getBody());
             return false;
         }
         $messages =  json_decode($response->getBody(),true)['data'];
