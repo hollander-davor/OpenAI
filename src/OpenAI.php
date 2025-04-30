@@ -319,4 +319,32 @@ class OpenAI{
         return $content;
     } 
 
+     /**
+     * This method is used to send message with all previous messages 
+     * which are provided to method ($dialogData)
+     * Also you can provide additional data in form of array
+     * that will be added to the request, such as
+     * temperature, top_p, frequency_penalty, presence_penalty...
+     *  
+     */
+    public function sendDialog($dialogData,$additionalData = [],$maxTokens = 4000){
+        $body = [
+            'model' => $this->getModel(),
+            'messages' => $dialogData,
+            'max_tokens' => $maxTokens,
+        ];
+        if(!empty($additionalData)){
+            foreach($additionalData as $key => $value){
+                $body[$key] = $value;
+            }
+        }
+
+        $options = ['headers' => $this->getHeaders(), 'json' => $body];
+        $response = $this->getClient()->request('POST', $this->getUri(), $options);
+
+        $this->setResponse($response);
+
+        return $this->getAnswer();
+    }
+
 }
