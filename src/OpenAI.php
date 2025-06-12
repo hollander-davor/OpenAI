@@ -256,13 +256,31 @@ class OpenAI{
     }
 
     //send data to thread
-    public function updateThread($threadId,$text){
+    public function updateThread($threadId,$text, array $fileIds = []){
         $client = new Client(['base_uri' => 'https://api.openai.com/v1/']);
         $this->setUri('threads/'.$threadId.'/messages');
-        $options = ['headers' => $this->getHeaders(),'json' => [
+
+        $payload = [
             'role' => 'user',
             'content' => $text
-        ]];
+        ];
+
+        // if there are files to attach, map each file ID into the structure the API expects
+        if (! empty($fileIds)) {
+            $payload['attachments'] = array_map(function (string $fileId) {
+                return [
+                    'file_id' => $fileId,
+                    'tools'   => [
+                        ['type' => 'file_search']
+                    ],
+                ];
+            }, $fileIds);
+        }
+
+        $options = [
+            'headers' => $this->getHeaders(),
+            'json' => $payload
+        ];
         $response = $client->request('POST',$this->getUri(),$options);
        
          // Provera uspešnosti odgovora
