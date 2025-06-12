@@ -347,4 +347,76 @@ class OpenAI{
         return $this->getAnswer();
     }
 
+    /**
+     * Uploads a file to OpenAI for a specific purpose.
+     *
+     * $filePath The path to the file to be uploaded.
+     * $purpose The purpose of the file :
+     *  - assistants: Used in the Assistants API
+     *  - batch: Used in the Batch API
+     *  - fine-tune: Used for fine-tuning
+     *  - vision: Images used for vision fine-tuning 
+     *  - user_data: Flexible file type for any purpose
+     *  - evals: Used for eval data sets
+    
+     */
+    public function uploadFile($filePath, $purpose){
+       
+        if (!file_exists($filePath)) {
+            throw new \Exception("File not found at: {$filePath}");
+        }
+        $client = $this->getClient(); // from your existing class
+        $headers = $this->getHeaders();
+        unset($headers['Content-Type']); // Remove Content-Type header for multipart requests
+
+        $options = [
+            'headers' => $headers,
+            'multipart' => [
+                [
+                    'name'     => 'purpose',
+                    'contents' => $purpose,
+                ],
+                [
+                    'name'     => 'file',
+                    'contents' => fopen($filePath, 'r'),
+                    'filename' => basename($filePath),
+                ],
+            ],
+        ];
+        $response = $client->request('POST', $this->getUri(), $options);
+        $arrayResponse =  json_decode($response->getBody(), true);
+
+        $fileId = $arrayResponse['id'];
+
+        return $fileId;
+    }
+
+    // Deletes a file from OpenAI by its file ID.
+    public function deleteFile($fileId){
+        $client  = $this->getClient();
+        // client uri for delete should be set to 'files'
+        $uri     = $this->getUri().'/'.$fileId;
+
+        $headers = $this->getHeaders();  
+        // Remove Content-Type header for DELETE requests
+        unset($headers['Content-Type']);
+        try {
+            $response = $client->request('DELETE', $uri, [
+                'headers'     => $headers,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                Log::error('Error deleting file, status '.$response->getStatusCode().': '.$response->getBody());
+                return false;
+            }
+
+            $data = json_decode((string)$response->getBody(), true);
+            return $data['deleted'] ?? false;
+
+        } catch (\Exception $e) {
+            Log::error('Exception deleting file: '.$e->getMessage());
+            return false;
+        }
+    }
+
 }
