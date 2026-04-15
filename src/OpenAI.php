@@ -430,6 +430,101 @@ class OpenAI{
     }
 
     /**
+     * Similar to send dialog, only it is used for async communication
+     * it return id of the queued task, and you can use that id to check task status and get result when it is ready
+     */
+    public function queueTask($dialogData,$additionalData = [],$maxTokens = 4000){
+        $uri = $this->getUri();
+         // If the URI is for the responses endpoint, map the dialog data to the new format
+        if (strpos($uri, 'responses') !== false) {
+            $dialogData = $this->mapChatToResponses($dialogData);
+        }
+        $body = [
+            'model' => $this->getModel(),
+            'background' => true,
+            $this->getMessagesKey() => $dialogData,
+            $this->getMaxTokensKey() => $maxTokens,
+        ];
+        if(!empty($additionalData)){
+            foreach($additionalData as $key => $value){
+                $body[$key] = $value;
+            }
+        }
+
+        $options = ['headers' => $this->getHeaders(), 'json' => $body];
+        $response = $this->getClient()->request('POST', $this->getUri(), $options);
+
+        $this->setResponse($response);
+        $responseId = $this->getResponseId($response);
+
+        return $responseId;
+    }
+
+    /**
+     * method that gets response id from openAI response
+     */
+    public function getResponseId($response): ?string
+    {
+        $data = is_string($response)
+            ? json_decode($response, true)
+            : json_decode($response->getBody()->getContents(), true);
+
+        return $data['id'] ?? null;
+    }
+
+    /**
+     * method that checks status of the queued task by response id. 
+     * It returns status as string, or null if there is an error.
+     */
+    public function getQueuedTaskStatus(string $responseId): ?string
+    {
+        $this->setUri("responses/{$responseId}");
+
+        $response = $this->getClient()->request('GET', $this->getUri(), [
+            'headers' => $this->getHeaders(),
+        ]);
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        
+        return $data['status'] ?? null;
+    }
+
+    /**
+     * method that gets answer of the queued task by response id.
+     */
+    public function getQueuedTaskAnswer(string $responseId): array
+    {
+        $this->setUri("responses/{$responseId}");
+
+        $response = $this->getClient()->request('GET', $this->getUri(), [
+            'headers' => $this->getHeaders(),
+        ]);
+
+        $this->setResponse($response);
+
+        $data = json_decode($response->getBody()->getContents(), true);
+
+        if (($data['status'] ?? null) !== 'completed') {
+            return [
+                'status' => $data['status'] ?? 'unknown',
+                'content' => null
+            ];
+        }
+
+        $output = end($data['output']);
+
+        $message = [
+            'content' => '',
+        ];
+
+        if (($output['type'] ?? null) === 'message') {
+            $message['content'] = $output['content'][0]['text'] ?? '';
+        }
+
+        return $message;
+    }
+
+    /**
      * Uploads a file to OpenAI for a specific purpose.
      *
      * $filePath The path to the file to be uploaded.
